@@ -1,4 +1,215 @@
-[
+[<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TUK Interactive Map</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Custom CSS -->
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(to bottom, #e6f0fa, #ffffff);
+            color: #2d3436;
+        }
+        #map {
+            height: 70vh;
+            width: 92%;
+            margin: 20px auto;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            border: 1px solid #dfe6e9;
+        }
+        .header {
+            text-align: center;
+            padding: 25px;
+            background: #0984e3;
+            color: #fff;
+            border-bottom: 4px solid #0652dd;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.2em;
+            letter-spacing: 1px;
+        }
+        .header p {
+            margin: 5px 0 0;
+            font-size: 1em;
+            opacity: 0.9;
+        }
+        .controls {
+            position: absolute;
+            top: 120px;
+            right: 30px;
+            background: #fff;
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+        }
+        .controls label {
+            font-weight: 600;
+            margin-right: 10px;
+            color: #2d3436;
+        }
+        .controls select {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #b2bec3;
+            background: #f8f9fa;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        .footer {
+            text-align: center;
+            padding: 15px;
+            font-size: 0.85em;
+            color: #636e72;
+            background: #f8f9fa;
+            border-top: 1px solid #dfe6e9;
+        }
+        .footer a {
+            color: #0984e3;
+            text-decoration: none;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        @media (max-width: 768px) {
+            #map {
+                height: 60vh;
+                width: 95%;
+            }
+            .header h1 {
+                font-size: 1.8em;
+            }
+            .header p {
+                font-size: 0.9em;
+            }
+            .controls {
+                top: 100px;
+                right: 15px;
+                padding: 8px;
+            }
+            .controls select {
+                font-size: 0.85em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Discover Nairobi Near TUK</h1>
+        <p>Interactive map showcasing key locations around the Technical University of Kenya</p>
+    </div>
+    <div id="map"></div>
+    <div class="controls">
+        <label for="basemap">Basemap:</label>
+        <select id="basemap">
+            <option value="osm">OpenStreetMap</option>
+            <option value="mapbox">Mapbox Streets</option>
+            <option value="esri">Esri Satellite</option>
+        </select>
+    </div>
+    <div class="footer">
+        Built with <a href="https://leafletjs.com">Leaflet</a> | Map data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors
+    </div>
+
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Initialize map centered at TUK
+        const tukCoords = [-1.2910, 36.8198];
+        const map = L.map('map', {
+            zoomControl: true,
+            scrollWheelZoom: true
+        }).setView(tukCoords, 15);
+
+        // Define basemaps
+        const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        const mapbox = L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+            attribution: 'Map data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+            maxZoom: 18,
+            id: 'mapbox/streets-v11',
+            tileSize: 512,
+            zoomOffset: -1,
+            accessToken: 'YOUR_MAPBOX_ACCESS_TOKEN' // Replace with your Mapbox token
+        });
+
+        const esri = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles © Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+            maxZoom: 18
+        });
+
+        // Markers with popups
+        const markers = [
+            {
+                coords: [-1.2910, 36.8198],
+                title: "Technical University of Kenya",
+                description: "The heart of my academic journey, where I attend lectures and engage in student life."
+            },
+            {
+                coords: [-1.2870, 36.8225],
+                title: "Tom Mboya Market",
+                description: "Vibrant spot for shopping clothes, electronics, and local delicacies."
+            },
+            {
+                coords: [-1.2935, 36.8160],
+                title: "All Saints' Cathedral",
+                description: "A serene place for worship and community gatherings on Sundays."
+            },
+            {
+                coords: [-1.2890, 36.8240],
+                title: "Sarova Stanley - The Thorn Tree Café",
+                description: "My go-to hangout for coffee, conversations, and a historic vibe."
+            }
+        ];
+
+        markers.forEach(marker => {
+            L.marker(marker.coords)
+                .addTo(map)
+                .bindPopup(`<b>${marker.title}</b><br>${marker.description}`)
+                .on('click', function() {
+                    this.openPopup();
+                });
+        });
+
+        // Map click popup
+        map.on('click', function(e) {
+            const popupContent = `Location: <br>Latitude: ${e.latlng.lat.toFixed(4)}<br>Longitude: ${e.latlng.lng.toFixed(4)}`;
+            L.popup()
+                .setLatLng(e.latlng)
+                .setContent(popupContent)
+                .openOn(map);
+        });
+
+        // Basemap switcher
+        document.getElementById('basemap').addEventListener('change', function(e) {
+            const selected = e.target.value;
+            map.eachLayer(layer => {
+                if (layer instanceof L.TileLayer) {
+                    map.removeLayer(layer);
+                }
+            });
+            if (selected === 'osm') {
+                osm.addTo(map);
+            } else if (selected === 'mapbox') {
+                mapbox.addTo(map);
+            } else if (selected === 'esri') {
+                esri.addTo(map);
+            }
+        });
+    </script>
+</body>
+</html>
   {
     "name":"OpenStreetMap",
     "link":"http://openstreetmap.org",
